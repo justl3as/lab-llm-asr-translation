@@ -13,6 +13,9 @@ langgraph = "^0.3.20"
 langchain-openai = "^0.3.10"
 langchain-google-genai = "^2.1.1"
 openai-whisper = "^20240930"
+streamlit = "^1.44.0"
+nest-asyncio = "^1.6.0"
+yt-dlp = "^2025.3.26"
 
 [tool.isort]
 profile = "black"

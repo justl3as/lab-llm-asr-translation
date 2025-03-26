@@ -3,10 +3,7 @@ from langgraph.graph import StateGraph
 from processors.audio_extractor import AudioExtractor
 from processors.summarizer import Summarizer
 from processors.transcriber import TranscribeAudio
-from processors.translator import (
-    ContextTranslator,
-    WhisperTranslator,
-)
+from processors.translator import ContextTranslator, WhisperTranslator
 from workflow.state import State
 
 
@@ -17,12 +14,10 @@ class GraphBuilder:
         self.workflow = StateGraph(State)
         self.entry_point = None
 
-    def add_audio_extractor(self):
+    def add_audio_extractor(self, node_name):
         """Add audio extractor to the workflow"""
         audio_extractor = AudioExtractor()
-        self.workflow.add_node(
-            "extract_audio", lambda state: audio_extractor.process(state)
-        )
+        self.workflow.add_node(node_name, lambda state: audio_extractor.process(state))
         return self
 
     def add_transcriber(self, node_name):
