@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 from langchain.prompts import PromptTemplate
 
@@ -9,8 +10,17 @@ from workflow.state import State
 class BaseProcessor(ABC):
     """Template Method Pattern for processors"""
 
-    def __init__(self):
+    def __init__(self, node_name: str = None):
         self.config = AppConfig()
+        self.node_name = node_name
+
+    def track_token_usage(self, state: State, response: Any) -> None:
+        """Track token usage from LLM response metadata"""
+        if hasattr(response, "usage_metadata") and response.usage_metadata:
+            state.add_token_usage_from_metadata(
+                self.node_name,
+                response.usage_metadata,
+            )
 
     def process(self, state: State) -> State:
         """Template method that defines the outline of processing steps"""

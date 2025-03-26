@@ -28,19 +28,19 @@ class GraphBuilder:
 
     def add_summarizer(self, node_name):
         """Add summarizer to the workflow"""
-        summarizer = Summarizer()
+        summarizer = Summarizer(node_name)
         self.workflow.add_node(node_name, lambda state: summarizer.process(state))
         return self
 
     def add_whisper_translator(self, node_name):
         """Add whisper translator to the workflow"""
-        translator = WhisperTranslator()
+        translator = WhisperTranslator(node_name)
         self.workflow.add_node(node_name, lambda state: translator.process(state))
         return self
 
     def add_context_translator(self, node_name):
         """Add context translator to the workflow"""
-        translator = ContextTranslator()
+        translator = ContextTranslator(node_name)
         self.workflow.add_node(node_name, lambda state: translator.process(state))
         return self
 

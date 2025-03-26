@@ -38,6 +38,9 @@ class Summarizer(BaseProcessor):
         response = llm.invoke(prompt_template)
         summarized_context = response.content
 
+        # Track token usage
+        self.track_token_usage(state, response)
+
         print("Context summary created successfully")
 
         return State(

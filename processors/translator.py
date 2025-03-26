@@ -46,6 +46,7 @@ class WhisperTranslator(BaseProcessor):
         context,
         semaphore: Semaphore,
         batch_index: int,
+        state: State,
         max_retries: int = 3,
     ):
         async with semaphore:
@@ -64,7 +65,12 @@ class WhisperTranslator(BaseProcessor):
             for attempt in range(max_retries):
                 try:
                     translated_batch = await self._translate_segments(
-                        prompt, batch, batch_index, attempt, max_retries
+                        prompt,
+                        batch,
+                        batch_index,
+                        attempt,
+                        max_retries,
+                        state,
                     )
 
                     print(f"[Batch {batch_index}] Successfully processed all segments")
@@ -101,6 +107,7 @@ class WhisperTranslator(BaseProcessor):
         batch_index,
         attempt,
         max_retries,
+        state: State,
     ):
         """Send request to LLM and process the response"""
         llm = self.config.get_llm_model()
@@ -112,6 +119,9 @@ class WhisperTranslator(BaseProcessor):
         response = await llm.ainvoke(prompt)
         translated_segment_texts = str(response.content).strip()
         translated_batch_texts = translated_segment_texts.split("\n---SEGMENT---\n")
+
+        # Track token usage
+        self.track_token_usage(state, response)
 
         # Validate response
         if len(translated_batch_texts) != len(batch):
@@ -149,7 +159,7 @@ class WhisperTranslator(BaseProcessor):
 
         semaphore = Semaphore(max_concurrent)
         tasks = [
-            self._process_batch(batch, context, semaphore, idx)
+            self._process_batch(batch, context, semaphore, idx, state)
             for idx, batch in enumerate(segment_batches, 1)
         ]
         results = await asyncio.gather(*tasks)
@@ -162,9 +172,9 @@ class WhisperTranslator(BaseProcessor):
                 **state.model_dump(),
                 "context": "Final translated context",
                 "metadata": {
-            **state.metadata,
-            "translated_segments": translated_segments,
-        },
+                    **state.metadata,
+                    "translated_segments": translated_segments,
+                },
             }
         )
 
@@ -208,6 +218,9 @@ class ContextTranslator(BaseProcessor):
         prompt_template = self._load_prompt_template.format(context=context)
         response = llm.invoke(prompt_template)
         translated_context = response.content
+
+        # Track token usage
+        self.track_token_usage(state, response)
 
         print("Translation context completed.")
 
