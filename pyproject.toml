@@ -1,10 +1,18 @@
 [project]
-name = "vscode-python"
+name = "llm-asr-translation"
 version = "0.1.0"
 description = "LLM lab for ASR and translation"
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = []
+
+[tool.poetry.dependencies]
+python = "~3.11"
+python-dotenv = "^1.0.1"
+ffmpeg-python = "^0.2.0"
+langchain = "^0.3.21"
+langgraph = "^0.3.20"
+langchain-openai = "^0.3.10"
+langchain-google-genai = "^2.1.1"
+openai-whisper = "^20240930"
 
 [tool.isort]
 profile = "black"
