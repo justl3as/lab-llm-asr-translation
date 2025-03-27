@@ -4,6 +4,7 @@ from typing import Any
 from langchain.prompts import PromptTemplate
 
 from config.app_config import AppConfig
+from utils.logging_utils import setup_logger
 from workflow.state import State
 
 
@@ -13,6 +14,7 @@ class BaseProcessor(ABC):
     def __init__(self, node_name: str = "processor") -> None:
         self.config = AppConfig()
         self.node_name = node_name
+        self.logger = setup_logger(f"{self.__class__.__name__}")
 
     def track_token_usage(self, state: State, response: Any) -> None:
         """Track token usage from LLM response metadata"""
