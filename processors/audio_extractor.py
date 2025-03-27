@@ -23,7 +23,7 @@ class AudioExtractor(BaseProcessor):
 
     def _extract_audio_from_youtube_video(self, youtube_url: str) -> str:
         """Download a YouTube video and return the path to the downloaded file."""
-        print(f"Downloading YouTube video: {youtube_url}")
+        self.logger.info(f"Downloading YouTube video: {youtube_url}")
         temp_dir = tempfile.gettempdir()
         uuid_str = str(uuid.uuid4())
         output_path = os.path.join(temp_dir, f"{uuid_str}")
@@ -56,12 +56,12 @@ class AudioExtractor(BaseProcessor):
                 f"Please check if the YouTube URL is valid and accessible: {youtube_url}."
             )
 
-        print(f"YouTube audio extracted to {audio_path}")
+        self.logger.info(f"YouTube audio extracted to {audio_path}")
         return audio_path
 
     def _extract_audio_from_video_file(self, file_path: str) -> str:
         """Extract audio from video file and save as WAV format."""
-        print("Extracting audio from video...")
+        self.logger.info("Extracting audio from video...")
 
         # Create a temporary file with .wav extension
         temp_dir = tempfile.gettempdir()
@@ -79,7 +79,7 @@ class AudioExtractor(BaseProcessor):
             loglevel="error",
         )
         ffmpeg.run(stream, overwrite_output=True)
-        print(f"Audio extracted to {audio_path}")
+        self.logger.info(f"Audio extracted to {audio_path}")
         return audio_path
 
     def _process_implementation(self, state: State) -> State:
@@ -87,7 +87,7 @@ class AudioExtractor(BaseProcessor):
         audio_path = state.audio_path
 
         if audio_path:
-            print("Audio already extracted. Skipping extraction step.")
+            self.logger.info("Audio already extracted. Skipping extraction step.")
             return State(**{**state.model_dump(), "audio_path": audio_path})
         elif self._is_youtube_url(video_path):
             audio_path = self._extract_audio_from_youtube_video(video_path)
