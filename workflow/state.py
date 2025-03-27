@@ -46,8 +46,8 @@ class State(BaseModel):
     State model for processing workflow.
     """
 
-    video_path: str
-    audio_path: Optional[str] = None
+    video_path: str = ""
+    audio_path: str = ""
     context: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
     token_usage: Dict[str, TokenUsage] = Field(default_factory=dict)

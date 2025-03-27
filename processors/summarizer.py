@@ -8,18 +8,18 @@ class Summarizer(BaseProcessor):
     """Processor for text summarization"""
 
     TEMPLATE = """
-    You are an expert in summarizing content from video transcripts.
+You are an expert in summarizing content from video transcripts.
 
-    Carefully read the following transcript and provide a concise summary that includes:
-    - The main points discussed
-    - The overall context or purpose of the conversation
-    - Any key insights or noteworthy opinions
+Carefully read the following transcript and provide a concise summary that includes:
+- The main points discussed
+- The overall context or purpose of the conversation
+- Any key insights or noteworthy opinions
 
-    Use clear and easy-to-understand language:
+Use clear and easy-to-understand language:
 
-    Input:
-    {context}
-    """
+Input:
+{context}
+"""
 
     @property
     def _load_prompt_template(self) -> PromptTemplate:

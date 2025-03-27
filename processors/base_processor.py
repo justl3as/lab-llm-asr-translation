@@ -10,7 +10,7 @@ from workflow.state import State
 class BaseProcessor(ABC):
     """Template Method Pattern for processors"""
 
-    def __init__(self, node_name: str = None):
+    def __init__(self, node_name: str = "processor") -> None:
         self.config = AppConfig()
         self.node_name = node_name
 

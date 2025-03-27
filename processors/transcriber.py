@@ -35,7 +35,7 @@ class TranscribeAudio(BaseProcessor):
         whisper_model_size = self.config.whisper_model_size
         print(f"Transcribing audio using Whisper {whisper_model_size} model...")
 
-        audio_path = state.audio_path or ""
+        audio_path = state.audio_path
         model = whisper.load_model(whisper_model_size)
 
         response = model.transcribe(audio_path, task="transcribe", fp16=False)
@@ -43,19 +43,18 @@ class TranscribeAudio(BaseProcessor):
         transcribed_segments = self.extract_segments(response["segments"])
 
         print(
-            f"Transcription completed successfully ({len(transcribed_segments)} segments, {len(transcribed_text)} characters)"
+            f"Transcription completed successfully "
+            f"({len(transcribed_segments)} segments, {len(transcribed_text)} characters)"
         )
-
-        updated_metadata = {
-            **state.metadata,
-            "transcribed_text": transcribed_text,
-            "transcribed_segments": transcribed_segments,
-        }
 
         return State(
             **{
                 **state.model_dump(),
                 "context": transcribed_text,
-                "metadata": updated_metadata,
+                "metadata": {
+                    **state.metadata,
+                    "transcribed_text": transcribed_text,
+                    "transcribed_segments": transcribed_segments,
+                },
             }
         )

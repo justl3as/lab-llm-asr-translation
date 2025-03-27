@@ -40,7 +40,7 @@ class AudioExtractor(BaseProcessor):
                 "-acodec",
                 "pcm_s16le",
                 "-ar",
-                "16000",
+                "16k",
                 "-ac",
                 "1",
             ],
@@ -83,11 +83,15 @@ class AudioExtractor(BaseProcessor):
         return audio_path
 
     def _process_implementation(self, state: State) -> State:
-        file_path = state.video_path
+        video_path = state.video_path
+        audio_path = state.audio_path
 
-        if self._is_youtube_url(file_path):
-            audio_path = self._extract_audio_from_youtube_video(file_path)
+        if audio_path:
+            print("Audio already extracted. Skipping extraction step.")
+            return State(**{**state.model_dump(), "audio_path": audio_path})
+        elif self._is_youtube_url(video_path):
+            audio_path = self._extract_audio_from_youtube_video(video_path)
         else:
-            audio_path = self._extract_audio_from_video_file(file_path)
+            audio_path = self._extract_audio_from_video_file(video_path)
 
         return State(**{**state.model_dump(), "audio_path": audio_path})

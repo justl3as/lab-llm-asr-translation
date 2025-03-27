@@ -12,31 +12,43 @@ class WhisperTranslator(BaseProcessor):
     """Processor for text translation"""
 
     TEMPLATE = """
-    You are an expert in Software Engineer, specializing in translating subtitles.
+You are an expert in Software Engineer, specializing in translating subtitles.
 
-    Your task is to accurately translate English subtitles into Thai.
+Your task is to accurately translate English subtitles into Thai.
 
-    Instructions:
-    - The input is a string of subtitle segments, separated by the delimiter `---SEGMENT---`.
-    - Preserve the original meaning and flow of natural spoken Thai.
-    - Split the following Thai subtitle text into at most 2 lines, if possible, without changing its meaning.
-    - Ensure each line is no longer than 63 characters.
-    - Remove any unnecessary words while preserving the original meaning.
-    - DO NOT translate or modify the delimiter `---SEGMENT---`. Keep it exactly as is between segments.
-    - Do not translate proper names (e.g., people's names, brand names) or technical terms (e.g., programming syntax, tool names, AI-related terms).
-    - Do NOT add any explanation, formatting, or commentary.
+Instructions:
+- Preserve the original meaning and flow of natural spoken Thai.
+- Remove any unnecessary words while preserving the original meaning.
+- The input is a string of subtitle segments, separated by the delimiter `[SSS]`.
+- Ensure Output `[SSS]` is equal to Input `[SSS]`.
+- DO NOT translate or modify the delimiter `[SSS]`. Keep it exactly as is between segments.
+- Do NOT translate proper names (e.g., people's names, brand names) or technical terms (e.g., programming syntax, tool names, AI-related terms).
+- Do NOT add any explanation, formatting, or commentary.
+- Line Count: Limit the subtitle to a maximum of 2 lines.
+- Character Limits: Adjust each line to have between 43 and 50 characters.
 
-    Check Context if exist:
-    {summarized_context}...
+Example:
+- data input
+text1
+[SSS]
+text2
+[SSS]
+text3
+- data output
+translated_text1
+[SSS]
+translated_text2
+[SSS]
+translated_text3
 
-    Input:
-    {context}
-    """
+your task is to translate the following segments:
+{context}
+"""
 
     @property
     def _load_prompt_template(self) -> PromptTemplate:
         return PromptTemplate(
-            input_variables=["summarized_context", "context"],
+            input_variables=["context"],
             template=self.TEMPLATE,
         )
 
@@ -56,10 +68,7 @@ class WhisperTranslator(BaseProcessor):
             segment_texts = self._prepare_batch_text(batch)
 
             # Get the prompt ready for LLM
-            prompt = self._load_prompt_template.format(
-                summarized_context=context[:1000],
-                context=segment_texts,
-            )
+            prompt = self._load_prompt_template.format(context=segment_texts)
 
             # Process with retries
             for attempt in range(max_retries):
@@ -82,7 +91,7 @@ class WhisperTranslator(BaseProcessor):
                         and attempt < max_retries - 1
                     ):
                         print(f"[Batch {batch_index}] {str(e)}. Retrying...")
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(2)
                         continue
                     raise
                 except Exception as e:
@@ -90,7 +99,7 @@ class WhisperTranslator(BaseProcessor):
                         print(
                             f"[Batch {batch_index}] Error on attempt {attempt + 1}: {str(e)}. Retrying..."
                         )
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(2)
                         continue
                     print(f"[Batch {batch_index}] Failed after {max_retries} attempts")
                     raise
@@ -98,7 +107,7 @@ class WhisperTranslator(BaseProcessor):
     def _prepare_batch_text(self, batch):
         """Extract and join segment texts with delimiter"""
         batch_texts = [segment["text"].strip() for segment in batch]
-        return "\n---SEGMENT---\n".join(batch_texts)
+        return "\n[SSS]\n".join(batch_texts)
 
     async def _translate_segments(
         self,
@@ -116,9 +125,9 @@ class WhisperTranslator(BaseProcessor):
             f"[Batch {batch_index}] Sending request to LLM "
             f"(attempt {attempt + 1}/{max_retries})"
         )
-        response = await llm.ainvoke(prompt)
+        response = llm.invoke(prompt)
         translated_segment_texts = str(response.content).strip()
-        translated_batch_texts = translated_segment_texts.split("\n---SEGMENT---\n")
+        translated_batch_texts = translated_segment_texts.split("\n[SSS]\n")
 
         # Track token usage
         self.track_token_usage(state, response)
@@ -143,7 +152,7 @@ class WhisperTranslator(BaseProcessor):
     async def _process_implementation_async(self, state: State) -> State:
         print("Translating context...")
         batch_size = self.config.batch_size
-        concurrent_batches = self.config.concurrent_batches
+        concurrent_batches = self.config.concurrent_batches or 3
         context = state.context or ""
 
         segments = state.metadata["transcribed_segments"]
@@ -153,9 +162,9 @@ class WhisperTranslator(BaseProcessor):
 
         print(
             f"Processing {len(segment_batches)} batches with max "
-            f"{concurrent_batches or 3} concurrent tasks"
+            f"{concurrent_batches} concurrent tasks"
         )
-        max_concurrent = concurrent_batches or 3
+        max_concurrent = concurrent_batches
 
         semaphore = Semaphore(max_concurrent)
         tasks = [
@@ -163,7 +172,9 @@ class WhisperTranslator(BaseProcessor):
             for idx, batch in enumerate(segment_batches, 1)
         ]
         results = await asyncio.gather(*tasks)
-        translated_segments = [item for sublist in results for item in sublist]
+        translated_segments = [
+            item for sublist in results if sublist is not None for item in sublist
+        ]
 
         print("Translation segments completed.")
 
@@ -189,18 +200,18 @@ class ContextTranslator(BaseProcessor):
     """Processor for text translation"""
 
     TEMPLATE = """
-    You are an expert in communication, language editing, and translation.
+You are an expert in communication, language editing, and translation.
 
-    Below is a transcript generated by a speech-to-text system (Whisper):
-    "{context}"
+Below is a transcript generated by a speech-to-text system (Whisper):
+"{context}"
 
-    Instructions:
-    1. Correct any incorrect or misspelled words.
-    3. Preserve the original meaning as much as possible.
-    3. Translate the improved version into Thai.
+Instructions:
+1. Correct any incorrect or misspelled words.
+3. Preserve the original meaning as much as possible.
+3. Translate the improved version into Thai.
 
-    Output Only the final improved and translated Thai version of the text.
-    """
+Output Only the final improved and translated Thai version of the text.
+"""
 
     @property
     def _load_prompt_template(self) -> PromptTemplate:
@@ -211,7 +222,7 @@ class ContextTranslator(BaseProcessor):
 
     def _process_implementation(self, state: State) -> State:
         print(f"Translating context using {self.config.llm_model_name} models...")
-        context = state.context
+        context = state.context or ""
 
         llm = self.config.get_llm_model()
 
