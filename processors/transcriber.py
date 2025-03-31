@@ -4,7 +4,7 @@ import whisper
 
 from processors.audio_extractor import AudioExtractor
 from processors.base_processor import BaseProcessor
-from utils.time_utils import fix_first_speech_timestamp
+from utils.time import fix_first_speech_timestamp
 from workflow.state import State
 
 

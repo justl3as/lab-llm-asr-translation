@@ -64,7 +64,7 @@ class WhisperTranslator(BaseProcessor):
                         self.logger.warning(
                             f"[Batch {batch_index}] {str(e)}. Retrying..."
                         )
-                        await asyncio.sleep(2)
+                        await asyncio.sleep(5)
                         continue
                     raise
                 except Exception as e:
@@ -72,7 +72,7 @@ class WhisperTranslator(BaseProcessor):
                         self.logger.warning(
                             f"[Batch {batch_index}] Error on attempt {attempt + 1}: {str(e)}. Retrying..."
                         )
-                        await asyncio.sleep(2)
+                        await asyncio.sleep(5)
                         continue
                     self.logger.error(
                         f"[Batch {batch_index}] Failed after {max_retries} attempts"
@@ -128,7 +128,7 @@ class WhisperTranslator(BaseProcessor):
             {
                 "start": segment["start"],
                 "end": segment["end"],
-                "text": translated_text.strip(),
+                "text": translated_text.strip().replace("[SSS]", ""),
             }
             for segment, translated_text in zip(batch, translated_batch_texts)
         ]

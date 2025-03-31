@@ -3,10 +3,10 @@ import re
 import tempfile
 import uuid
 
-import ffmpeg
 import yt_dlp
 
 from processors.base_processor import BaseProcessor
+from utils.process_audio import extract_audio_file
 from workflow.state import State
 
 
@@ -63,22 +63,8 @@ class AudioExtractor(BaseProcessor):
         """Extract audio from video file and save as WAV format."""
         self.logger.info("Extracting audio from video...")
 
-        # Create a temporary file with .wav extension
-        temp_dir = tempfile.gettempdir()
-        temp_filename = os.path.basename(os.path.splitext(file_path)[0]) + ".wav"
-        audio_path = os.path.join(temp_dir, temp_filename)
+        audio_path = extract_audio_file(file_path)
 
-        stream = ffmpeg.input(file_path)
-        stream = ffmpeg.output(
-            stream,
-            audio_path,
-            acodec="pcm_s16le",  # Audio codec for WAV format
-            ac=1,  # Mono channel for better compatibility
-            ar="16k",  # Audio sample rate
-            map="0:a",  # Select first audio stream from input
-            loglevel="error",
-        )
-        ffmpeg.run(stream, overwrite_output=True)
         self.logger.info(f"Audio extracted to {audio_path}")
         return audio_path
 

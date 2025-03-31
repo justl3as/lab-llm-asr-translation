@@ -4,7 +4,7 @@ from typing import Any
 from langchain.prompts import PromptTemplate
 
 from config.app_config import AppConfig
-from utils.logging_utils import setup_logger
+from utils.logging import setup_logger
 from workflow.state import State
 
 
