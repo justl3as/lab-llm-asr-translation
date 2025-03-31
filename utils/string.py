@@ -1,37 +1,44 @@
 from pythainlp.tokenize import word_tokenize
 
 
-def warp_text(text: str) -> str:
-    # Tokenize the text into a list of words
+def warp_text(text: str, min_length: int = 44, ratio: float = 2.0) -> str:
+    """
+    Wrap Thai text into multiple lines using word tokenization.
+    """
+    if not text:
+        return ""
+
     tokens = word_tokenize(text, engine="newmm")
+    if not tokens:
+        return ""
+
+    max_line_length = max(len(text) // ratio, min_length)
     lines = []
     current_line = ""
 
-    warp = len(text)
-    BASE_LENGTH = 42
-    ratio = warp / BASE_LENGTH
-
-    if ratio <= 1.5:
-        max_chars = warp
-    elif ratio <= 2.5:
-        max_chars = BASE_LENGTH
-    elif ratio <= 3:
-        max_chars = warp / 2
-    else:
-        max_chars = warp / 3
-
     for token in tokens:
-        # Check if adding the new word exceeds the maximum character limit
-        if len(current_line + token) <= max_chars:
+        if len(current_line + token) <= max_line_length:
             current_line += token
         else:
-            # If the limit is reached, save the current line and start a new one
-            lines.append(current_line)
+            if current_line:
+                lines.append(current_line)
             current_line = token
-    # Save the last line if it exists
+
     if current_line:
         lines.append(current_line)
-    return "\n".join(lines)
+
+    # More efficient line joining
+    if not lines:
+        return ""
+    elif len(lines) == 1:
+        return lines[0]
+    elif len(lines) == 2:
+        if len(lines[len(lines) - 1]) < max_line_length // 2:
+            return f"{''.join(lines[0:])}"
+        else:
+            return "\n".join(lines)
+    else:
+        return f"{lines[0]}\n{''.join(lines[1:])}"
 
 
 def combine_texts(texts: list) -> str:

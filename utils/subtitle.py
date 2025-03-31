@@ -25,7 +25,7 @@ class SRTFormatter:
 
                 start_time = format_timestamp(start)
                 end_time = format_timestamp(end)
-                text = warp_text(segment["text"].strip())
+                text = warp_text(segment["text"])
 
                 previous_end = end
 

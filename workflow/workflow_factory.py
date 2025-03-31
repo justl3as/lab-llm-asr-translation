@@ -21,3 +21,15 @@ class WorkflowFactory:
         builder.add_edge("whisper_translate", END)
 
         return builder.build()
+
+    @staticmethod
+    def transcribe_translate_workflow():
+        """Create a workflow that extracts audio, transcribes, and translates"""
+        builder = GraphBuilder()
+        builder.add_transcriber("transcriber")
+        builder.add_whisper_translator("whisper_translate")
+
+        builder.add_edge("transcriber", "whisper_translate")
+        builder.add_edge("whisper_translate", END)
+
+        return builder.build()

@@ -128,7 +128,7 @@ class WhisperTranslator(BaseProcessor):
             {
                 "start": segment["start"],
                 "end": segment["end"],
-                "text": translated_text.strip().replace("[SSS]", ""),
+                "text": translated_text.replace("[SSS]", "").strip(" \n"),
             }
             for segment, translated_text in zip(batch, translated_batch_texts)
         ]

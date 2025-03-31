@@ -16,6 +16,8 @@ openai-whisper = "^20240930"
 streamlit = "^1.44.0"
 nest-asyncio = "^1.6.0"
 yt-dlp = "^2025.3.26"
+pythainlp = "^5.1.1"
+webrtcvad-wheels = "^2.0.14"
 
 [tool.isort]
 profile = "black"

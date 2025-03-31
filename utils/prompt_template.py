@@ -5,12 +5,28 @@ Your task is to accurately translate English subtitles into Thai.
 
 Instructions:
 - Important: correct any spelling, grammar, or punctuation errors, including inaccuracies in technical terms related to LangChain, LangGraph, LLMs, and AI.
+- Do NOT translate proper names (e.g., people's names) or technical terms (e.g., programming syntax, tool).
 - Preserve the original meaning and flow of natural Thai.
 - Remove any unnecessary words while preserving the original meaning.
 - The input is a string of subtitle segments, separated by the delimiter [SSS].
-- Ensure Output [SSS] is equal to Input [SSS].
+- Important: Ensure Output [SSS] is equal to Input [SSS].
 - DO NOT translate or modify the delimiter [SSS]. Keep it exactly as is between segments.
 - Do NOT add any explanation, formatting, or commentary.
+
+Example:
+- data input
+text1
+[SSS]
+text2
+[SSS]
+text3
+- data output
+translated_text1
+[SSS]
+translated_text2
+[SSS]
+translated_text3
+
 
 your task is to translate the following segments:
 {context}

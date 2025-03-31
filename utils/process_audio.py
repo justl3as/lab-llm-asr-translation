@@ -25,7 +25,7 @@ def extract_audio_file(input_file: str):
     wav_bytes = process_audio(mp4_bytes, format_in="mp4", acodec="pcm_s16le")
     clean_bytes = process_audio(wav_bytes, af="afftdn")
     normalized_bytes = process_audio(clean_bytes, filter_complex="loudnorm")
-    filtered_bytes = process_audio(normalized_bytes, af="highpass=f=480")
+    filtered_bytes = process_audio(normalized_bytes, af="highpass=f=500")
     final_bytes = process_audio(filtered_bytes, ar=16000, ac=1)
 
     # Create a temporary file with .wav extension
